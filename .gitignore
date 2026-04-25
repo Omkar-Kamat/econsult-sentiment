@@ -1,0 +1,5 @@
+*.md
+.venv/
+cfpb-complaint-nlp/data/raw/
+*.safetensors
+*.pkl
