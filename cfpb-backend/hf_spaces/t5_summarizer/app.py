@@ -1,6 +1,6 @@
 import gradio as gr
 import torch
-from transformers import T5Tokenizer, T5ForConditionalGeneration
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 MODEL_NAME             = "t5-base"
 MAX_INPUT_LEN          = 512
@@ -8,14 +8,19 @@ NUM_BEAMS              = 4
 MIN_WORDS_TO_SUMMARIZE = 40
 
 device       = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-tokenizer_t5 = T5Tokenizer.from_pretrained(MODEL_NAME)
-model_t5     = T5ForConditionalGeneration.from_pretrained(MODEL_NAME).to(device)
-model_t5.eval()
 
-print(f"T5-base loaded on {device}")
+print(f"Loading {MODEL_NAME} on {device}...")
+tokenizer_t5 = AutoTokenizer.from_pretrained(MODEL_NAME)
+model_t5     = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME).to(device)
+model_t5.eval()
+print("T5-base ready.")
 
 
 def summarize(text: str) -> str:
+    # Fix 17: input validation
+    if not isinstance(text, str) or not text.strip():
+        return ""
+
     word_count = len(text.split())
     if word_count < MIN_WORDS_TO_SUMMARIZE:
         return text.strip()
@@ -36,12 +41,12 @@ def summarize(text: str) -> str:
     with torch.no_grad():
         ids = model_t5.generate(
             inputs.input_ids,
-            max_length          = max_sum,
-            min_length          = min_sum,
-            num_beams           = NUM_BEAMS,
-            length_penalty      = 1.0,
+            max_length           = max_sum,
+            min_length           = min_sum,
+            num_beams            = NUM_BEAMS,
+            length_penalty       = 1.0,
             no_repeat_ngram_size = 3,
-            early_stopping      = True,
+            early_stopping       = True,
         )
 
     return tokenizer_t5.decode(ids[0], skip_special_tokens=True)

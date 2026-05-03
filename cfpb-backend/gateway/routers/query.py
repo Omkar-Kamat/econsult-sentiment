@@ -23,9 +23,10 @@ async def query(
         if norm > 0:
             q_embedding = q_embedding / norm
     except Exception as e:
+        print(f"[query] MiniLM Space call failed: {type(e).__name__}: {e}")
         raise HTTPException(
             status_code=503,
-            detail=f"Embedding service unavailable: {str(e)}"
+            detail="Embedding service temporarily unavailable. Please retry."
         )
 
     filters  = body.filters or {}
@@ -50,7 +51,7 @@ async def query(
         )
 
     answer = (
-        synthesize_answer(body.question, retrieved)
+        await synthesize_answer(body.question, retrieved)
         if body.synthesize
         else f"Retrieved {len(retrieved)} complaints."
     )

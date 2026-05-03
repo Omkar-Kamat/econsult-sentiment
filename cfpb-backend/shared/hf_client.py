@@ -7,7 +7,6 @@ HF_SPACES: dict[str, str] = {
     "sentiment": os.getenv("HF_BERT_URL", ""),
     "embed":     os.getenv("HF_MINILM_URL", ""),
     "summarize": os.getenv("HF_T5_URL", ""),
-    "cluster":   os.getenv("HF_KMEANS_URL", ""),
 }
 
 TIMEOUT = 60.0

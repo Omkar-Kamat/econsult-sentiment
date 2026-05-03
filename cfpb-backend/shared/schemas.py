@@ -34,11 +34,12 @@ class ClusterResponse(BaseModel):
 
 class ResolutionRequest(BaseModel):
     narrative: str
-    issue: str
-    cluster: int
-    compound: float
-    severity: int = 3
-    word_count: int = 100
+    issue: str = Field(..., min_length=1)
+    cluster: int = Field(..., ge=0, le=2)         
+    compound: float = Field(..., ge=-1.0, le=1.0) 
+    severity: int = Field(default=3, ge=1, le=5)
+    word_count: int = Field(default=0, ge=0)      
+    text_processed: str = Field(default="")
 
 
 class ResolutionResponse(BaseModel):

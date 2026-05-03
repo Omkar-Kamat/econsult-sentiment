@@ -94,37 +94,28 @@ def format_results(retrieved: pd.DataFrame) -> list[dict]:
     return output
 
 
-def synthesize_answer(question: str, retrieved: pd.DataFrame) -> str:
-    """Generate a grounded answer from retrieved complaints."""
-    prompt = _build_prompt(question, retrieved)
+async def synthesize_answer(question: str, retrieved: pd.DataFrame) -> str:
+    """
+    Async synthesis: tries T5 Space first, falls back to structured summary.
+    """
+    from shared.hf_client import call_space
 
-    # Anthropic Claude (recommended)
-    # import anthropic, os
-    # client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-    # msg = client.messages.create(
-    #     model="claude-sonnet-4-20250514",
-    #     max_tokens=512,
-    #     messages=[{"role": "user", "content": prompt}],
-    # )
-    # return msg.content[0].text
+    # Concatenate top-5 narratives as T5 input
+    top5 = retrieved.head(5)
+    combined = " ".join(str(r["narrative"])[:200] for _, r in top5.iterrows())
 
-    # OpenAI GPT-4o
-    # from openai import OpenAI
-    # client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    # resp = client.chat.completions.create(
-    #     model="gpt-4o",
-    #     messages=[{"role": "user", "content": prompt}],
-    #     max_tokens=512,
-    # )
-    # return resp.choices[0].message.content
+    try:
+        summary = await call_space("summarize", combined)
+        return f"[T5 Summary of top {len(top5)} complaints]: {summary}"
+    except Exception as e:
+        print(f"[rag] T5 Space call failed, using structured fallback: {e}")
 
+    # Structured fallback
     lines = [f"Retrieved {len(retrieved)} complaints for: '{question}'\n"]
     for i, row in retrieved.iterrows():
         lines.append(
             f"  [{i + 1}] sim={row['similarity']:.3f}  "
-            f"cluster={row['cluster']}  "
-            f"sentiment={row['sentiment']}  "
-            f"severity={row['severity_score']}\n"
+            f"cluster={row['cluster']}  sentiment={row['sentiment']}\n"
             f"       {str(row['narrative'])[:200]}"
         )
     return "\n".join(lines)

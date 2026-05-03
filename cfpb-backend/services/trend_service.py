@@ -7,7 +7,7 @@ ANOMALY_SIGMA  = 2.0
 MIN_MONTH_SIZE = 50
 
 
-def _build_monthly(df: pd.DataFrame) -> pd.DataFrame:
+def _build_monthly(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     """Aggregate the severity_data df into monthly cluster-share series."""
     if "date_received" not in df.columns:
         raise ValueError(
@@ -57,19 +57,21 @@ def get_trends(months: int | None = None, cluster: int | None = None) -> dict:
 
         series = monthly_pct[c]
         mu     = series.mean()
-        sigma  = series.std() or 1.0
+        sigma  = series.std()
+        if pd.isna(sigma) or sigma == 0.0:   # ← FIX: handles n=1 and constant series
+            sigma = 1.0
 
         for month, value in series.items():
             z = float((value - mu) / sigma)
             is_anomaly = abs(z) > ANOMALY_SIGMA
             point = {
-                "month":             str(month),
-                "cluster":           int(c),
-                "cluster_label":     CLUSTER_LABELS.get(int(c), f"Cluster {c}"),
-                "share_pct":         round(float(value), 2),
-                "total_complaints":  int(totals.get(month, 0)),
-                "is_anomaly":        is_anomaly,
-                "z_score":           round(z, 3),
+                "month":            str(month),
+                "cluster":          int(c),
+                "cluster_label":    CLUSTER_LABELS.get(int(c), f"Cluster {c}"),
+                "share_pct":        round(float(value), 2),
+                "total_complaints": int(totals.get(month, 0)),
+                "is_anomaly":       is_anomaly,
+                "z_score":          round(z, 3),
             }
             data_points.append(point)
             if is_anomaly:

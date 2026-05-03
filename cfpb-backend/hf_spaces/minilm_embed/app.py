@@ -1,25 +1,48 @@
-import gradio as gr
-import numpy as np
+import os
+from fastapi import FastAPI
+from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
 
-MODEL_NAME = "all-MiniLM-L6-v2"
-model      = SentenceTransformer(MODEL_NAME)
+MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
 
+print(f"Loading {MODEL_NAME}...")
+model = SentenceTransformer(MODEL_NAME)
 print(f"MiniLM loaded: {MODEL_NAME}")
 
-
-def embed(text: str) -> list[float]:
-    vec  = model.encode([text], normalize_embeddings=True)[0]
-    return [round(float(v), 6) for v in vec]
+app = FastAPI(title="CFPB MiniLM Embed")
 
 
-demo = gr.Interface(
-    fn=embed,
-    inputs=gr.Textbox(label="Text to embed"),
-    outputs=gr.JSON(label="Embedding (384-dim, L2-normalised)"),
-    title="MiniLM Embeddings — CFPB",
-    description="Returns a 384-dimensional L2-normalised sentence embedding.",
-)
+class PredictRequest(BaseModel):
+    data: list[str]
 
-if __name__ == "__main__":
-    demo.launch()
+
+class PredictResponse(BaseModel):
+    data: list[list[float]]
+
+
+@app.get("/")
+def root():
+    return {
+        "status": "ok",
+        "model": MODEL_NAME,
+        "dim": 384,
+        "endpoint": "POST /run/predict with {\"data\": [\"text\"]}",
+    }
+
+
+@app.post("/run/predict", response_model=PredictResponse)
+def predict(req: PredictRequest):
+    """
+    Gateway-compatible endpoint.
+    Input:  {"data": ["text to embed"]}
+    Output: {"data": [[384 floats]]}
+    """
+    if not req.data:
+        return {"data": [[0.0] * 384]}
+
+    text = req.data[0]
+    if not isinstance(text, str) or not text.strip():
+        return {"data": [[0.0] * 384]}
+
+    vec = model.encode([text], normalize_embeddings=True)[0]
+    return {"data": [[round(float(v), 6) for v in vec]]}

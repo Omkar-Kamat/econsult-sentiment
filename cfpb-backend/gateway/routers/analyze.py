@@ -20,12 +20,35 @@ async def analyze(
 
     try:
         bert_result = await call_space("sentiment", prep["text_clean"])
-        prob_negative = float(bert_result.get("probs", [0, 0, 0])[0])
-        prob_neutral  = float(bert_result.get("probs", [0, 0, 0])[1])
-        prob_positive = float(bert_result.get("probs", [0, 0, 0])[2])
+        raw_probs = bert_result.get("probs")
+
+        # Validate we actually got a usable probs list before trusting it
+        if (
+            raw_probs is None
+            or not isinstance(raw_probs, list)
+            or len(raw_probs) != 3
+            or any(p is None for p in raw_probs)
+        ):
+            raise ValueError(f"Unexpected BERT response shape: {bert_result}")
+
+        prob_negative = float(raw_probs[0])
+        prob_neutral  = float(raw_probs[1])
+        prob_positive = float(raw_probs[2])
         sentiment     = bert_result.get("label", prep["sentiment"])
         compound      = prep["compound"]
-    except Exception:
+
+    except (ValueError, KeyError, IndexError, TypeError) as e:
+        # Malformed response — fall back to VADER, log it
+        print(f"[analyze] BERT Space returned unexpected data, falling back to VADER: {e}")
+        prob_negative = prep["prob_negative"]
+        prob_neutral  = prep["prob_neutral"]
+        prob_positive = prep["prob_positive"]
+        sentiment     = prep["sentiment"]
+        compound      = prep["compound"]
+
+    except Exception as e:
+        # Network/timeout failure — fall back to VADER, log it
+        print(f"[analyze] BERT Space call failed, falling back to VADER: {e}")
         prob_negative = prep["prob_negative"]
         prob_neutral  = prep["prob_neutral"]
         prob_positive = prep["prob_positive"]

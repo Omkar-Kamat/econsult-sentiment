@@ -38,6 +38,9 @@ def load_all(base: str = "artifacts") -> None:
     print("Loading severity model...")
     ARTIFACTS["severity"] = joblib.load(p / "severity_model.pkl")
 
+    print("Loading word_count CDF for severity...")
+    ARTIFACTS["wc_sorted"] = joblib.load(p / "wc_sorted.pkl")
+
     print("Loading resolution classifier bundle...")
     bundle = joblib.load(p / "resolution_classifier.pkl")
     ARTIFACTS["resolution_clf"]             = bundle["clf"]
@@ -65,3 +68,34 @@ def load_all(base: str = "artifacts") -> None:
 
     print(f"✓ All artifacts loaded | df={len(ARTIFACTS['df']):,} rows | "
           f"index={ARTIFACTS['faiss_index'].ntotal:,} vectors")
+    
+    n_df    = len(ARTIFACTS["df"])
+    n_index = ARTIFACTS["faiss_index"].ntotal
+    n_emb   = ARTIFACTS["embeddings"].shape[0]
+
+    assert n_df == n_index == n_emb, (
+    f"FATAL row mismatch: df={n_df}, faiss_index={n_index}, embeddings={n_emb}. "
+    f"Re-export embeddings_aligned.npy from NB10.")
+
+    print(f"All artifacts loaded | df={n_df:,} rows | index={n_index:,} vectors")
+    
+    print("Precomputing cluster keywords...")
+    df_ref    = ARTIFACTS["df"]
+    tfidf_ref = ARTIFACTS["tfidf"]
+    feats_ref = ARTIFACTS["tfidf_features"]
+    cluster_kw = {}
+
+    for c in sorted(df_ref["cluster"].dropna().unique()):
+        c = int(c)
+        mask   = df_ref["cluster"].values == c
+        texts  = df_ref.loc[mask, "text_processed"].fillna("").tolist()
+        if texts:
+            mat       = tfidf_ref.transform(texts)
+            mean_vec  = np.asarray(mat.mean(axis=0)).flatten()
+            top_idx   = mean_vec.argsort()[::-1][:10]
+            cluster_kw[c] = feats_ref[top_idx].tolist()
+        else:
+            cluster_kw[c] = []
+
+    ARTIFACTS["cluster_keywords"] = cluster_kw
+    print(f"  Cached keywords for {len(cluster_kw)} clusters")

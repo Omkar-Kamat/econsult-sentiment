@@ -1,0 +1,11 @@
+gradio==3.50.2
+gradio-client==0.6.1
+fastapi==0.104.1
+starlette==0.27.0
+pydantic==2.5.3
+uvicorn==0.24.0
+httpx==0.25.2
+transformers==4.41.2
+tokenizers==0.19.1
+torch==2.2.2
+numpy==1.26.4

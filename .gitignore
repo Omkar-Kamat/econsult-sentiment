@@ -3,3 +3,5 @@ raw/
 models/
 artifacts/
 *.md
+.env
+__pycache__/

@@ -20,15 +20,17 @@ async def cluster(
     prep = preprocess(body.narrative)
 
     try:
-        embed_result = await call_space("embed", prep["text_processed"])
+        embed_result = await call_space("embed", prep["text_clean"])
         embedding = np.array(embed_result, dtype="float32")
         norm = np.linalg.norm(embedding)
         if norm > 0:
             embedding = embedding / norm
     except Exception as e:
+        print(f"[cluster] MiniLM Space call failed: {type(e).__name__}: {e}")
         raise HTTPException(
             status_code=503,
-            detail=f"Embedding service unavailable: {str(e)}"
+            detail="Embedding service temporarily unavailable. Please retry."
+            # ← Don't leak the Space URL in the error message
         )
 
     result = predict_cluster(embedding)

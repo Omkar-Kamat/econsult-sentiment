@@ -1,21 +1,24 @@
 import gradio as gr
 import torch
 import numpy as np
-from transformers import BertTokenizer, BertForSequenceClassification
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
 
-MODEL_DIR   = "./bert_sentiment"
+MODEL_DIR   = "./model"           # ← changed from "./bert_sentiment"
 MAX_LEN     = 128
 LABEL_NAMES = ["negative", "neutral", "positive"]
 
 device    = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-tokenizer = BertTokenizer.from_pretrained(MODEL_DIR)
-model     = BertForSequenceClassification.from_pretrained(MODEL_DIR).to(device)
+tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
+model     = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR).to(device)
 model.eval()
 
 print(f"BERT sentiment loaded on {device}")
 
 
 def predict_sentiment(text: str) -> dict:
+    if not isinstance(text, str) or not text.strip():
+        return {"label": "neutral", "probs": [0.0, 1.0, 0.0]}
+
     inputs = tokenizer(
         text,
         return_tensors="pt",

@@ -8,7 +8,7 @@ services:
       pip install --upgrade pip setuptools wheel &&
       pip install -r requirements.txt &&
       python -m spacy download en_core_web_sm &&
-      python -c "import nltk; nltk.download('stopwords'); nltk.download('wordnet'); nltk.download('punkt'); nltk.download('punkt_tab')"
+      python -c "import nltk; nltk.download('stopwords'); nltk.download('wordnet'); nltk.download('punkt'); nltk.download('punkt_tab'); nltk.download('omw-1.4')"
     startCommand: uvicorn gateway.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
@@ -17,8 +17,6 @@ services:
       - key: HF_MINILM_URL
         sync: false
       - key: HF_T5_URL
-        sync: false
-      - key: HF_KMEANS_URL
         sync: false
       - key: API_KEY
         sync: false

@@ -5,7 +5,7 @@ import spacy
 from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 from nltk.corpus import stopwords
 
-for pkg in ["stopwords", "wordnet", "punkt"]:
+for pkg in ["stopwords", "wordnet", "punkt", "punkt_tab", "omw-1.4"]:
     nltk.download(pkg, quiet=True)
 
 nlp    = spacy.load("en_core_web_sm", disable=["parser", "ner"])
