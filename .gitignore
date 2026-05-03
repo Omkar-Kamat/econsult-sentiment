@@ -1,11 +1,5 @@
+.venv
+raw/
+models/
+artifacts/
 *.md
-.venv/
-cfpb-complaint-nlp/data/raw/
-*.safetensors
-*.pkl
-.env
-__pycache__/
-.ipynb_checkpoints/
-Explainations/
-plans/
-ml_artifacts/

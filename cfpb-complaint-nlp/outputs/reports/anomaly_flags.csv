@@ -1,0 +1,10 @@
+month,cluster,value,z_score,direction
+2015-05,Debt Collection & Recovery,39.22,2.21,spike
+2017-03,Debt Collection & Recovery,43.86,2.84,spike
+2017-05,Debt Collection & Recovery,38.67,2.14,spike
+2018-04,Debt Collection & Recovery,38.95,2.17,spike
+2015-10,Card Payments & Account Calls,77.59,2.83,spike
+2016-03,Card Payments & Account Calls,72.22,2.31,spike
+2016-07,Card Payments & Account Calls,76.67,2.74,spike
+2017-11,Card Payments & Account Calls,74.6,2.54,spike
+2025-08,Card Payments & Account Calls,26.68,-2.06,drop

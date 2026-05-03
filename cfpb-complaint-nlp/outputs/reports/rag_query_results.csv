@@ -1,0 +1,13 @@
+query,top1_similarity,top1_cluster,top1_sentiment,top1_severity,answer_preview
+Show me cases where customers disputed a credit report and got no relief.,0.6619209,0,positive,3,"Top 10 retrieved complaints for: 'Show me cases where customers disputed a credit report and got no relief.'
+  [1] Similarity=0.662 Cluster=0 Sentiment=positive
+       I am writing to formally dispute"
+What are the most common complaints about debt collection practices?,0.6679157,1,positive,3,"Top 10 retrieved complaints for: 'What are the most common complaints about debt collection practices?'
+  [1] Similarity=0.668 Cluster=1 Sentiment=positive
+       I don't know anything about this debt"
+Find high-severity card payment complaints where the company closed without relief.,0.62307096,2,negative,3,"Top 10 retrieved complaints for: 'Find high-severity card payment complaints where the company closed without relief.'
+  [1] Similarity=0.623 Cluster=2 Sentiment=negative
+       Abruptly and without p"
+Which product category has the most negative sentiment complaints?,0.39550656,0,negative,3,"Top 10 retrieved complaints for: 'Which product category has the most negative sentiment complaints?'
+  [1] Similarity=0.396 Cluster=0 Sentiment=negative
+       I am writing to file a complaint regard"
