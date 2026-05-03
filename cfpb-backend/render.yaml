@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: cfpb-backend
+    env: python
+    region: oregon
+    plan: starter
+    buildCommand: |
+      pip install --upgrade pip setuptools wheel &&
+      pip install -r requirements.txt &&
+      python -m spacy download en_core_web_sm &&
+      python -c "import nltk; nltk.download('stopwords'); nltk.download('wordnet'); nltk.download('punkt'); nltk.download('punkt_tab')"
+    startCommand: uvicorn gateway.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: HF_BERT_URL
+        sync: false
+      - key: HF_MINILM_URL
+        sync: false
+      - key: HF_T5_URL
+        sync: false
+      - key: HF_KMEANS_URL
+        sync: false
+      - key: API_KEY
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.12.3"
